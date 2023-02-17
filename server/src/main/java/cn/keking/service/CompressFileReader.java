@@ -40,7 +40,6 @@ public class CompressFileReader {
 
     private static final Pattern pattern = Pattern.compile("^\\d+");
     private final FileHandlerService fileHandlerService;
-    private final String fileDir = ConfigConstants.getFileDir();
     private final ExecutorService executors = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     public CompressFileReader(FileHandlerService fileHandlerService) {
@@ -443,7 +442,7 @@ public class CompressFileReader {
         }
 
         private void extractZipFile(String childName, InputStream zipFile) {
-            String outPath = fileDir + childName;
+            String outPath = ConfigConstants.getFileDir() + childName;
             try (OutputStream ot = new FileOutputStream(outPath)) {
                 byte[] inByte = new byte[1024];
                 int len;
@@ -485,7 +484,7 @@ public class CompressFileReader {
                             break;
                         }
                     }
-                    FileOutputStream out = new FileOutputStream(fileDir + childName);
+                    FileOutputStream out = new FileOutputStream(ConfigConstants.getFileDir() + childName);
                     byte[] content = new byte[(int) entry.getSize()];
                     sevenZFile.read(content, 0, content.length);
                     out.write(content);
@@ -542,7 +541,7 @@ public class CompressFileReader {
         }
 
         private void extractRarFile(String childName, FileHeader header, Archive archive) {
-            String outPath = fileDir + childName;
+            String outPath = ConfigConstants.getFileDir() + childName;
             try (OutputStream ot = new FileOutputStream(outPath)) {
                 archive.extractFile(header, ot);
             } catch (IOException | RarException e) {

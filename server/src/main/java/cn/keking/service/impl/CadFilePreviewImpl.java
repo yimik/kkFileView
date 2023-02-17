@@ -22,7 +22,6 @@ public class CadFilePreviewImpl implements FilePreview {
 
     private static final String OFFICE_PREVIEW_TYPE_IMAGE = "image";
     private static final String OFFICE_PREVIEW_TYPE_ALL_IMAGES = "allImages";
-    private static final String FILE_DIR = ConfigConstants.getFileDir();
 
     private final FileHandlerService fileHandlerService;
     private final OtherFilePreviewImpl otherFilePreview;
@@ -39,7 +38,7 @@ public class CadFilePreviewImpl implements FilePreview {
         String baseUrl = BaseUrlFilter.getBaseUrl();
         String fileName = fileAttribute.getName();
         String pdfName = fileName.substring(0, fileName.lastIndexOf(".") + 1) + "pdf";
-        String outFilePath = FILE_DIR + pdfName;
+        String outFilePath = ConfigConstants.getFileDir() + pdfName;
         // 判断之前是否已转换过，如果转换过，直接返回，否则执行转换
         if (!fileHandlerService.listConvertedFiles().containsKey(pdfName) || !ConfigConstants.isCacheEnabled()) {
             String filePath;

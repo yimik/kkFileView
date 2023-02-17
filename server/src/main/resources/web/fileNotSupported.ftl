@@ -35,12 +35,8 @@
 <div class="container">
     <img src="images/sorry.jpg"/>
     <span>
-        该(${fileType})文件，系统暂不支持在线预览，具体原因如下：
-        <p style="color: red;">${msg}</p>
+    该文件类型(${fileType})系统暂时不支持在线预览，<b>请联系系统管理员</b>
     </span>
 </div>
-<script>
-    console.log(`有任何疑问，请加：<a href="https://jq.qq.com/?_wv=1027&k=5c0UAtu">官方QQ群：613025121</a> 咨询`);
-</script>
 </body>
 </html>

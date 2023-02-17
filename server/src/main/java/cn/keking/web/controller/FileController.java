@@ -36,7 +36,6 @@ public class FileController {
 
     private final Logger logger = LoggerFactory.getLogger(FileController.class);
 
-    private final String fileDir = ConfigConstants.getFileDir();
     private final String demoDir = "demo";
     private final String demoPath = demoDir + File.separator;
 
@@ -66,12 +65,12 @@ public class FileController {
         if (existsFile(fileName)) {
             return ReturnResponse.failure("存在同名文件，请先删除原有文件再次上传");
         }
-        File outFile = new File(fileDir + demoPath);
+        File outFile = new File(ConfigConstants.getFileDir() + demoPath);
         if (!outFile.exists() && !outFile.mkdirs()) {
-            logger.error("创建文件夹【{}】失败，请检查目录权限！", fileDir + demoPath);
+            logger.error("创建文件夹【{}】失败，请检查目录权限！", ConfigConstants.getFileDir() + demoPath);
         }
-        logger.info("上传文件：{}", fileDir + demoPath + fileName);
-        try (InputStream in = file.getInputStream(); OutputStream out = new FileOutputStream(fileDir + demoPath + fileName)) {
+        logger.info("上传文件：{}", ConfigConstants.getFileDir() + demoPath + fileName);
+        try (InputStream in = file.getInputStream(); OutputStream out = new FileOutputStream(ConfigConstants.getFileDir() + demoPath + fileName)) {
             StreamUtils.copy(in, out);
             return ReturnResponse.success(null);
         } catch (IOException e) {
@@ -88,7 +87,7 @@ public class FileController {
         if (KkFileUtils.isIllegalFileName(fileName)) {
             return ReturnResponse.failure("非法文件名，删除失败！");
         }
-        File file = new File(fileDir + demoPath + fileName);
+        File file = new File(ConfigConstants.getFileDir() + demoPath + fileName);
         logger.info("删除文件：{}", file.getAbsolutePath());
         if (file.exists() && !file.delete()) {
             String msg = String.format("删除文件【%s】失败，请检查目录权限！", file.getPath());
@@ -101,7 +100,7 @@ public class FileController {
     @GetMapping("/listFiles")
     public List<Map<String, String>> getFiles() throws JsonProcessingException {
         List<Map<String, String>> list = new ArrayList<>();
-        File file = new File(fileDir + demoPath);
+        File file = new File(ConfigConstants.getFileDir() + demoPath);
         if (file.exists()) {
             Arrays.stream(Objects.requireNonNull(file.listFiles())).forEach(file1 -> {
                 Map<String, String> fileName = new HashMap<>();
@@ -113,7 +112,7 @@ public class FileController {
     }
 
     private boolean existsFile(String fileName) {
-        File file = new File(fileDir + demoPath + fileName);
+        File file = new File(ConfigConstants.getFileDir() + demoPath + fileName);
         return file.exists();
     }
 }

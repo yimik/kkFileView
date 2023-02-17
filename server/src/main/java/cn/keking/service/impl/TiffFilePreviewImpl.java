@@ -34,8 +34,6 @@ public class TiffFilePreviewImpl implements FilePreview {
     //默认初始化 50MB 内存
     private static final long INITIALIZE_MEMORY_SIZE_VALUE_DEFAULT = 1024L * 1024 * 50;
 
-    private final String fileDir = ConfigConstants.getFileDir();
-
     public TiffFilePreviewImpl(PictureFilePreviewImpl pictureFilePreview) {
         this.pictureFilePreview = pictureFilePreview;
     }
@@ -63,7 +61,7 @@ public class TiffFilePreviewImpl implements FilePreview {
             String inputFileName = url.substring(url.lastIndexOf("/") + 1);
             String inputFileNamePrefix = inputFileName.substring(0, inputFileName.lastIndexOf("."));
 
-            String strLocalTif = fileDir + inputFileName;
+            String strLocalTif = ConfigConstants.getFileDir() + inputFileName;
             File fileTiff = new File(strLocalTif);
             // 如果本地不存在这个tif文件，则下载
             if (!fileTiff.exists()) {
@@ -76,10 +74,10 @@ public class TiffFilePreviewImpl implements FilePreview {
             String baseUrl = BaseUrlFilter.getBaseUrl();
             if ("pdf".equalsIgnoreCase(tifPreviewType)) {
                 // 以PDF模式预览的过程
-                File filePdf = new File(fileDir + inputFileNamePrefix + ".pdf");
+                File filePdf = new File(ConfigConstants.getFileDir() + inputFileNamePrefix + ".pdf");
                 // 如果本地不存在对应的pdf，则调用转换过程。否则直接用现有的pdf文件
                 if (!filePdf.exists()) {
-                    filePdf = ConvertPicUtil.convertTif2Pdf(strLocalTif, fileDir + inputFileNamePrefix + ".pdf");
+                    filePdf = ConvertPicUtil.convertTif2Pdf(strLocalTif, ConfigConstants.getFileDir() + inputFileNamePrefix + ".pdf");
                 }
 
                 // 如果pdf已经存在，则将url路径加入到对象中，返回给页面
@@ -92,7 +90,7 @@ public class TiffFilePreviewImpl implements FilePreview {
                 }
             } else {
                 // 以JPG模式预览的过程
-                String strJpgFilePathName = fileDir + inputFileNamePrefix + ".jpg";
+                String strJpgFilePathName = ConfigConstants.getFileDir() + inputFileNamePrefix + ".jpg";
                 // 将tif转换为jpg，返回转换后的文件路径、文件名的list
                 List<String> listPic2Jpg = ConvertPicUtil.convertTif2Jpg(strLocalTif, strJpgFilePathName);
                 // 将返回页面的图片url的list对象

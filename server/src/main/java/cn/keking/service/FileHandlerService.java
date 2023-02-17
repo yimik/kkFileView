@@ -39,7 +39,6 @@ public class FileHandlerService {
     private final Logger logger = LoggerFactory.getLogger(FileHandlerService.class);
 
     private static final String DEFAULT_CONVERTER_CHARSET = System.getProperty("sun.jnu.encoding");
-    private final String fileDir = ConfigConstants.getFileDir();
     private final CacheService cacheService;
 
     @Value("${server.tomcat.uri-encoding:UTF-8}")
@@ -89,7 +88,7 @@ public class FileHandlerService {
      * @return 相对路径
      */
     public String getRelativePath(String absolutePath) {
-        return absolutePath.substring(fileDir.length());
+        return absolutePath.substring(ConfigConstants.getFileDir().length());
     }
 
     /**

@@ -21,7 +21,6 @@ import static cn.keking.utils.KkFileUtils.isHttpUrl;
 public class DownloadUtils {
 
     private final static Logger logger = LoggerFactory.getLogger(DownloadUtils.class);
-    private static final String fileDir = ConfigConstants.getFileDir();
     private static final String URL_PARAM_FTP_USERNAME = "ftp.username";
     private static final String URL_PARAM_FTP_PASSWORD = "ftp.password";
     private static final String URL_PARAM_FTP_CONTROL_ENCODING = "ftp.control.encoding";
@@ -82,10 +81,10 @@ public class DownloadUtils {
         } else { // 文件后缀不一致时，以type为准(针对simText【将类txt文件转为txt】)
             fileName = fileName.replace(fileName.substring(fileName.lastIndexOf(".") + 1), type);
         }
-        String realPath = fileDir + fileName;
-        File dirFile = new File(fileDir);
+        String realPath = ConfigConstants.getFileDir() + fileName;
+        File dirFile = new File(ConfigConstants.getFileDir());
         if (!dirFile.exists() && !dirFile.mkdirs()) {
-            logger.error("创建目录【{}】失败,可能是权限不够，请检查", fileDir);
+            logger.error("创建目录【{}】失败,可能是权限不够，请检查", ConfigConstants.getFileDir());
         }
 
         // 文件已在本地存在，跳过文件下载
