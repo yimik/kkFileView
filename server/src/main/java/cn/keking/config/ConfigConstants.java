@@ -1,6 +1,10 @@
 package cn.keking.config;
 
+import cn.keking.utils.SslUtils;
+import cn.keking.web.controller.FileController;
 import org.artofsolving.jodconverter.util.ConfigUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -16,9 +20,18 @@ import java.util.concurrent.CopyOnWriteArraySet;
 @Component
 public class ConfigConstants {
 
+    private static final Logger logger = LoggerFactory.getLogger(FileController.class);
+
     static {
         //pdfbox兼容低版本jdk
         System.setProperty("sun.java2d.cmm", "sun.java2d.cmm.kcms.KcmsServiceProvider");
+
+        // 忽略ssl证书
+        try {
+            SslUtils.ignoreSsl();
+        } catch (Exception e) {
+            logger.error("忽略SSL证书异常:", e);
+        }
     }
 
     private static Boolean cacheEnabled;
