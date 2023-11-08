@@ -1,11 +1,13 @@
 package cn.keking.utils;
 
-import cpdetector.CharsetPrinter;
+import cn.keking.config.ConfigConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.util.HtmlUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,14 +34,29 @@ public class KkFileUtils {
 
     /**
      * 检查文件名是否合规
+     *
      * @param fileName 文件名
-     * @return 合规结果,true:不合规，false:合规
+     * @return 合规结果, true:不合规，false:合规
      */
-    public static boolean isIllegalFileName(String fileName){
-        for (String str: illegalFileStrList){
-            if(fileName.contains(str)){
+    public static boolean isIllegalFileName(String fileName) {
+        for (String str : illegalFileStrList) {
+            if (fileName.contains(str)) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    /**
+     * 检查是否是数字
+     *
+     * @param str 文件名
+     * @return 合规结果, true:不合规，false:合规
+     */
+    public static boolean isInteger(String str) {
+        if (StringUtils.hasText(str)) {
+            boolean strResult = str.matches("-?[0-9]+.?[0-9]*");
+            return strResult;
         }
         return false;
     }
@@ -87,33 +104,17 @@ public class KkFileUtils {
         }
     }
 
-    /**
-     * 检测文件编码格式
-     *
-     * @param filePath 绝对路径
-     * @return 编码格式
-     */
-    public static String getFileEncode(String filePath) {
-        return getFileEncode(new File(filePath));
+
+    public static String htmlEscape(String input) {
+        if (StringUtils.hasText(input)) {
+            //input = input.replaceAll("\\{", "%7B").replaceAll("}", "%7D").replaceAll("\\\\", "%5C");
+            String htmlStr = HtmlUtils.htmlEscape(input, "UTF-8");
+            //& -> &amp;
+            return htmlStr.replace("&amp;", "&");
+        }
+        return input;
     }
 
-    /**
-     * 检测文件编码格式
-     *
-     * @param file 检测的文件
-     * @return 编码格式
-     */
-    public static String getFileEncode(File file) {
-        CharsetPrinter cp = new CharsetPrinter();
-        try {
-            String encoding = cp.guessEncoding(file);
-            LOGGER.info("检测到文件【{}】编码: {}", file.getAbsolutePath(), encoding);
-            return encoding;
-        } catch (IOException e) {
-            LOGGER.warn("文件编码获取失败，采用默认的编码格式：UTF-8", e);
-            return DEFAULT_FILE_ENCODING;
-        }
-    }
 
     /**
      * 通过文件名获取文件后缀
@@ -179,6 +180,33 @@ public class KkFileUtils {
             return false;
         }
         return true;
+    }
+
+    /**
+     * 判断文件是否允许上传
+     *
+     * @param file 文件扩展名
+     * @return 是否允许上传
+     */
+    public static boolean isAllowedUpload(String file) {
+        String fileType = suffixFromFileName(file);
+        for (String type : ConfigConstants.getProhibit()) {
+            if (type.equals(fileType)){
+                return false;
+            }
+        }
+        return !ObjectUtils.isEmpty(fileType);
+    }
+
+    /**
+     * 判断文件是否存在
+     *
+     * @param filePath 文件路径
+     * @return 是否存在 true:存在，false:不存在
+     */
+    public static boolean isExist(String filePath) {
+        File file = new File(filePath);
+        return file.exists();
     }
 
 }

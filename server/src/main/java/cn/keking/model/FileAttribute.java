@@ -1,7 +1,6 @@
 package cn.keking.model;
 
 import cn.keking.config.ConfigConstants;
-import org.artofsolving.jodconverter.model.FileProperties;
 
 /**
  * Created by kl on 2018/1/17.
@@ -19,6 +18,14 @@ public class FileAttribute {
     private String officePreviewType = ConfigConstants.getOfficePreviewType();
     private String tifPreviewType;
     private Boolean skipDownLoad = false;
+    private Boolean forceUpdatedCache = false;
+
+    /**
+     * 代理请求到文件服务器的认证请求头，格式如下：
+     * {“username”:"test","password":"test"}
+     * 请求文件服务器时，会将 json 直接塞到请求头里
+     */
+    private String kkProxyAuthorization;
 
     public FileAttribute() {
     }
@@ -36,12 +43,6 @@ public class FileAttribute {
         this.name = name;
         this.url = url;
         this.officePreviewType = officePreviewType;
-    }
-
-    public FileProperties toFileProperties() {
-        FileProperties fileProperties = new FileProperties();
-        fileProperties.setFilePassword(filePassword);
-        return fileProperties;
     }
 
     public String getFileKey() {
@@ -123,5 +124,18 @@ public class FileAttribute {
     public void setTifPreviewType(String previewType) {
         this.tifPreviewType = previewType;
     }
+    public Boolean forceUpdatedCache() {
+        return forceUpdatedCache;
+    }
+    public void setForceUpdatedCache(Boolean forceUpdatedCache) {
+        this.forceUpdatedCache = forceUpdatedCache;
+    }
 
+    public String getKkProxyAuthorization() {
+        return kkProxyAuthorization;
+    }
+
+    public void setKkProxyAuthorization(String kkProxyAuthorization) {
+        this.kkProxyAuthorization = kkProxyAuthorization;
+    }
 }

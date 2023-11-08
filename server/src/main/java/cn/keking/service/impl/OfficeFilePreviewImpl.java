@@ -7,13 +7,18 @@ import cn.keking.service.FileHandlerService;
 import cn.keking.service.FilePreview;
 import cn.keking.service.OfficeToPdfService;
 import cn.keking.utils.DownloadUtils;
+import cn.keking.utils.KkFileUtils;
 import cn.keking.utils.OfficeUtils;
 import cn.keking.web.filter.BaseUrlFilter;
-import org.artofsolving.jodconverter.office.OfficeException;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.poi.EncryptedDocumentException;
+import org.jodconverter.core.office.OfficeException;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.List;
 
 /**
@@ -25,6 +30,8 @@ public class OfficeFilePreviewImpl implements FilePreview {
 
     public static final String OFFICE_PREVIEW_TYPE_IMAGE = "image";
     public static final String OFFICE_PREVIEW_TYPE_ALL_IMAGES = "allImages";
+    private static final String FILE_DIR = ConfigConstants.getFileDir();
+    private static final String OFFICE_PASSWORD_MSG = "password";
 
     private final FileHandlerService fileHandlerService;
     private final OfficeToPdfService officeToPdfService;
@@ -44,19 +51,31 @@ public class OfficeFilePreviewImpl implements FilePreview {
         String suffix = fileAttribute.getSuffix();
         String fileName = fileAttribute.getName();
         String filePassword = fileAttribute.getFilePassword();
+        boolean forceUpdatedCache=fileAttribute.forceUpdatedCache();
         String userToken = fileAttribute.getUserToken();
-        boolean isHtml = suffix.equalsIgnoreCase("xls") || suffix.equalsIgnoreCase("xlsx");
-        String pdfName = fileName.substring(0, fileName.lastIndexOf(".") + 1) + (isHtml ? "html" : "pdf");
+        boolean isHtml = suffix.equalsIgnoreCase("xls") || suffix.equalsIgnoreCase("xlsx") || suffix.equalsIgnoreCase("csv") || suffix.equalsIgnoreCase("xlsm") || suffix.equalsIgnoreCase("xlt") || suffix.equalsIgnoreCase("xltm") || suffix.equalsIgnoreCase("et") || suffix.equalsIgnoreCase("ett") || suffix.equalsIgnoreCase("xlam");
+        String pdfName = fileName.substring(0, fileName.lastIndexOf(".") ) + suffix +"." +(isHtml ? "html" : "pdf"); //生成文件添加类型后缀 防止同名文件
         String cacheFileName = userToken == null ? pdfName : userToken + "_" + pdfName;
-        String outFilePath = ConfigConstants.getFileDir() + cacheFileName;
-
+        String outFilePath = FILE_DIR + cacheFileName;
+        if (!officePreviewType.equalsIgnoreCase("html")) {
+            if (ConfigConstants.getOfficeTypeWeb() .equalsIgnoreCase("web")) {
+                if (suffix.equalsIgnoreCase("xlsx")) {
+                    model.addAttribute("pdfUrl", KkFileUtils.htmlEscape(url)); //特殊符号处理
+                    return XLSX_FILE_PREVIEW_PAGE;
+                }
+                if (suffix.equalsIgnoreCase("csv")) {
+                    model.addAttribute("csvUrl", KkFileUtils.htmlEscape(url));
+                    return CSV_FILE_PREVIEW_PAGE;
+                }
+            }
+        }
+        if (forceUpdatedCache|| !fileHandlerService.listConvertedFiles().containsKey(pdfName) || !ConfigConstants.isCacheEnabled()) {
         // 下载远程文件到本地，如果文件在本地已存在不会重复下载
         ReturnResponse<String> response = DownloadUtils.downLoad(fileAttribute, fileName);
         if (response.isFailure()) {
             return otherFilePreview.notSupportedFile(model, fileAttribute, response.getMsg());
         }
         String filePath = response.getContent();
-
         /*
          * 1. 缓存判断-如果文件已经进行转换过，就直接返回，否则执行转换
          * 2. 缓存判断-加密文件基于userToken进行缓存，如果没有就不缓存
@@ -67,7 +86,7 @@ public class OfficeFilePreviewImpl implements FilePreview {
         if (ConfigConstants.isCacheEnabled()) {
             // 全局开启缓存
             isUseCached = true;
-            if (fileHandlerService.listConvertedFiles().containsKey(cacheFileName)) {
+            if (!forceUpdatedCache && fileHandlerService.listConvertedFiles().containsKey(cacheFileName)) {
                 // 存在缓存
                 isCached = true;
             }
@@ -82,7 +101,7 @@ public class OfficeFilePreviewImpl implements FilePreview {
             isPwdProtectedOffice = OfficeUtils.isPwdProtected(filePath);
         }
 
-        if (isCached == false) {
+        if (!isCached) {
             // 没有缓存执行转换逻辑
             if (isPwdProtectedOffice && !StringUtils.hasLength(filePassword)) {
                 // 加密文件需要密码
@@ -93,7 +112,7 @@ public class OfficeFilePreviewImpl implements FilePreview {
                     try {
                         officeToPdfService.openOfficeToPDF(filePath, outFilePath, fileAttribute);
                     } catch (OfficeException e) {
-                        if (isPwdProtectedOffice && OfficeUtils.isCompatible(filePath, filePassword) == false) {
+                        if (isPwdProtectedOffice && !OfficeUtils.isCompatible(filePath, filePassword)) {
                             // 加密文件密码错误，提示重新输入
                             model.addAttribute("needFilePassword", true);
                             model.addAttribute("filePasswordError", true);
@@ -107,6 +126,10 @@ public class OfficeFilePreviewImpl implements FilePreview {
                         // 对转换后的文件进行操作(改变编码方式)
                         fileHandlerService.doActionConvertedFile(outFilePath);
                     }
+                    //是否保留OFFICE源文件
+                    if (ConfigConstants.getDeleteSourceFile()) {
+                        KkFileUtils.deleteFileByPath(filePath);
+                    }
                     if (isUseCached) {
                         // 加入缓存
                         fileHandlerService.addConvertedFile(cacheFileName, fileHandlerService.getRelativePath(outFilePath));
@@ -114,11 +137,11 @@ public class OfficeFilePreviewImpl implements FilePreview {
                 }
             }
         }
-
+        }
         if (!isHtml && baseUrl != null && (OFFICE_PREVIEW_TYPE_IMAGE.equals(officePreviewType) || OFFICE_PREVIEW_TYPE_ALL_IMAGES.equals(officePreviewType))) {
             return getPreviewType(model, fileAttribute, officePreviewType, baseUrl, cacheFileName, outFilePath, fileHandlerService, OFFICE_PREVIEW_TYPE_IMAGE, otherFilePreview);
         }
-
+        cacheFileName =   URLEncoder.encode(cacheFileName).replaceAll("\\+", "%20");
         model.addAttribute("pdfUrl", cacheFileName);
         return isHtml ? EXEL_FILE_PREVIEW_PAGE : PDF_FILE_PREVIEW_PAGE;
     }
@@ -126,11 +149,24 @@ public class OfficeFilePreviewImpl implements FilePreview {
     static String getPreviewType(Model model, FileAttribute fileAttribute, String officePreviewType, String baseUrl, String pdfName, String outFilePath, FileHandlerService fileHandlerService, String officePreviewTypeImage, OtherFilePreviewImpl otherFilePreview) {
         String suffix = fileAttribute.getSuffix();
         boolean isPPT = suffix.equalsIgnoreCase("ppt") || suffix.equalsIgnoreCase("pptx");
-        List<String> imageUrls = fileHandlerService.pdf2jpg(outFilePath, pdfName, baseUrl);
+        List<String> imageUrls = null;
+        try {
+            imageUrls =  fileHandlerService.pdf2jpg(outFilePath, pdfName, fileAttribute);
+        } catch (Exception e) {
+            Throwable[] throwableArray = ExceptionUtils.getThrowables(e);
+            for (Throwable throwable : throwableArray) {
+                if (throwable instanceof IOException || throwable instanceof EncryptedDocumentException) {
+                    if (e.getMessage().toLowerCase().contains(OFFICE_PASSWORD_MSG)) {
+                        model.addAttribute("needFilePassword", true);
+                        return EXEL_FILE_PREVIEW_PAGE;
+                    }
+                }
+            }
+        }
         if (imageUrls == null || imageUrls.size() < 1) {
             return otherFilePreview.notSupportedFile(model, fileAttribute, "office转图片异常，请联系管理员");
         }
-        model.addAttribute("imgurls", imageUrls);
+        model.addAttribute("imgUrls", imageUrls);
         model.addAttribute("currentUrl", imageUrls.get(0));
         if (officePreviewTypeImage.equals(officePreviewType)) {
             // PPT 图片模式使用专用预览页面

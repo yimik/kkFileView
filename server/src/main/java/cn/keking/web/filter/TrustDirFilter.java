@@ -3,11 +3,12 @@ package cn.keking.web.filter;
 import cn.keking.config.ConfigConstants;
 import cn.keking.utils.WebUtils;
 import io.mola.galimatias.GalimatiasParseException;
-import org.artofsolving.jodconverter.util.PlatformUtils;
+import org.jodconverter.core.util.OSUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.FileCopyUtils;
+import org.springframework.util.StringUtils;
 
 import javax.servlet.*;
 import java.io.IOException;
@@ -55,11 +56,15 @@ public class TrustDirFilter implements Filter {
     }
 
     private boolean allowPreview(String urlPath) {
+        //判断URL是否合法
+        if(!StringUtils.hasText(urlPath) || !WebUtils.isValidUrl(urlPath)) {
+            return false ;
+        }
         try {
             URL url = WebUtils.normalizedURL(urlPath);
             if ("file".equals(url.getProtocol().toLowerCase(Locale.ROOT))) {
                 String filePath = URLDecoder.decode(url.getPath(), StandardCharsets.UTF_8.name());
-                if (PlatformUtils.isWindows()) {
+                if (OSUtils.IS_OS_WINDOWS) {
                     filePath = filePath.replaceAll("/", "\\\\");
                 }
                 return filePath.startsWith(ConfigConstants.getFileDir()) || filePath.startsWith(ConfigConstants.getLocalPreviewDir());
