@@ -8,24 +8,23 @@ import io.mola.galimatias.GalimatiasParseException;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.util.StringUtils;
+import org.springframework.web.client.RequestCallback;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
 
 import static cn.keking.utils.KkFileUtils.isFtpUrl;
 import static cn.keking.utils.KkFileUtils.isHttpUrl;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.util.StringUtils;
-import org.springframework.web.client.RequestCallback;
-import org.springframework.web.client.RestTemplate;
 /**
  * @author yudian-it
  */
@@ -96,8 +95,8 @@ public class DownloadUtils {
                           proxyAuthorizationMap.entrySet().forEach(entry-> request.getHeaders().set(entry.getKey(), entry.getValue()));
                         }
                     };
-                    urlStr = URLDecoder.decode(urlStr, StandardCharsets.UTF_8.name());
-                    restTemplate.execute(urlStr, HttpMethod.GET, requestCallback, fileResponse -> {
+//                    urlStr = URLDecoder.decode(urlStr, StandardCharsets.UTF_8.name());
+                    restTemplate.execute(URI.create(urlStr), HttpMethod.GET, requestCallback, fileResponse -> {
                         FileUtils.copyToFile(fileResponse.getBody(), realFile);
                         return null;
                     });

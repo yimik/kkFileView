@@ -37,7 +37,6 @@
     <span>
     该文件类型(${fileType})系统暂时不支持在线预览，<b>请联系系统管理员</b>
     </span>
-    <p>有任何疑问，请加入kk开源社区知识星球咨询：<a href="https://t.zsxq.com/09ZHSXbsQ">https://t.zsxq.com/09ZHSXbsQ</a><br></p>
 </div>
 </body>
 </html>
