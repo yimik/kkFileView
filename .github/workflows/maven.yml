@@ -10,8 +10,8 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-    runs-on: ubuntu-22.04
+  buildx:
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 8

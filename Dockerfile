@@ -14,6 +14,8 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     rm -rf LibreOffice_24.2.4* && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
+ENV KK_OFFICE_HOME /opt/libreoffice24.2
+
 ADD server/target/kkFileView-*.tar.gz /opt/
 ENV KKFILEVIEW_BIN_FOLDER /opt/kkFileView-4.4.0-beta/bin
 ENTRYPOINT ["java","-Dfile.encoding=UTF-8","-Dspring.config.location=/opt/kkFileView-4.4.0-beta/config/application.properties","-jar","/opt/kkFileView-4.4.0-beta/bin/kkFileView-4.4.0-beta.jar"]
