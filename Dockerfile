@@ -4,14 +4,14 @@ MAINTAINER yimik "398075986@163.com"
 RUN export DEBIAN_FRONTEND=noninteractive && \
     sed -i 's@//.*archive.ubuntu.com@//mirrors.ustc.edu.cn@g' /etc/apt/sources.list &&  \
     apt update && apt install -y wget libnss3 libcairo2 libxslt1.1 libcups2 libx11-xcb1 && \
-    wget https://download.documentfoundation.org/libreoffice/stable/24.2.4/deb/x86_64/LibreOffice_24.2.4_Linux_x86-64_deb.tar.gz && \
-    tar -xzf LibreOffice_24.2.4_Linux_x86-64_deb.tar.gz && \
-    dpkg -i LibreOffice_24.2.4*/DEBS/*.deb && \
-    rm -rf LibreOffice_24.2.4* && \
-    wget https://download.documentfoundation.org/libreoffice/stable/24.2.4/deb/x86_64/LibreOffice_24.2.4_Linux_x86-64_deb_langpack_zh-CN.tar.gz &&  \
-    tar -xzf LibreOffice_24.2.4_Linux_x86-64_deb_langpack_zh-CN.tar.gz  && \
-    dpkg -i LibreOffice_24.2.4*/DEBS/*.deb && \
-    rm -rf LibreOffice_24.2.4* && \
+    wget https://download.documentfoundation.org/libreoffice/stable/24.2.5/deb/x86_64/LibreOffice_24.2.5_Linux_x86-64_deb.tar.gz && \
+    tar -xzf LibreOffice_24.2.5_Linux_x86-64_deb.tar.gz && \
+    dpkg -i LibreOffice_24.2.5*/DEBS/*.deb && \
+    rm -rf LibreOffice_24.2.5* && \
+    wget https://download.documentfoundation.org/libreoffice/stable/24.2.5/deb/x86_64/LibreOffice_24.2.5_Linux_x86-64_deb_langpack_zh-CN.tar.gz &&  \
+    tar -xzf LibreOffice_24.2.5_Linux_x86-64_deb_langpack_zh-CN.tar.gz  && \
+    dpkg -i LibreOffice_24.2.5*/DEBS/*.deb && \
+    rm -rf LibreOffice_24.2.5* && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ENV KK_OFFICE_HOME /opt/libreoffice24.2
