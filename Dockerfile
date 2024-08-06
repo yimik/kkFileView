@@ -4,9 +4,9 @@ MAINTAINER yimik "398075986@163.com"
 RUN export DEBIAN_FRONTEND=noninteractive && \
     sed -i 's@//.*archive.ubuntu.com@//mirrors.ustc.edu.cn@g' /etc/apt/sources.list &&  \
     apt update && apt install -y software-properties-common gnupg2 && \
-    add-apt-repository ppa:libreoffice/ppa && \
+    add-apt-repository -y ppa:libreoffice/ppa && \
     apt update && \
-    apt install libreoffice=4:24.2.5* libreoffice-l10n-zh-cn && \
+    apt install -y libreoffice=4:24.2.5~rc2-0ubuntu0.22.04.1~lo1 libreoffice-l10n-zh-cn && \
     apt-get clean
 
 # 删除不必要的文件以减小镜像大小
